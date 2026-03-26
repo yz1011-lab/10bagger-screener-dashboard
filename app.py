@@ -228,6 +228,25 @@ def call_master_analysis(ticker, company_name, master_name, master_notebook_id):
 
 
 # ============================================================================
+# P(H) TREND ARROW HELPER
+# ============================================================================
+def ph_trend_arrow(current_ph, prior_ph):
+    """Return ↑↓→ arrow comparing current vs prior P(H)."""
+    if current_ph is None or current_ph == 0:
+        return "-"
+    ph_str = f"{current_ph:.1%}"
+    if prior_ph is None or prior_ph == 0:
+        return ph_str  # No prior data, just show value
+    diff = current_ph - prior_ph
+    if diff > 0.001:  # Meaningful increase (>0.1%)
+        return f"{ph_str} ↑"
+    elif diff < -0.001:  # Meaningful decrease
+        return f"{ph_str} ↓"
+    else:
+        return f"{ph_str} →"
+
+
+# ============================================================================
 # URL HELPERS
 # ============================================================================
 def make_yahoo_url(ticker, market):
@@ -441,7 +460,7 @@ with tab1:
                 "毛利率": fmt_pct(row.get("gross_margin")),
                 "營收成長": fmt_pct(row.get("revenue_growth")),
                 "綜合分": f"{row.get('composite_score', 0):.1f}",
-                "P(H)": f"{row.get('current_ph', 0):.1%}" if row.get("current_ph") else "-",
+                "P(H)": ph_trend_arrow(row.get("current_ph"), row.get("prior_ph")),
                 "Yahoo Finance": row.get("yahoo_finance_url", ""),
                 "Alphaspread": row.get("alphaspread_url", ""),
             }
